@@ -216,6 +216,8 @@ async function runInSession(entry: SessionFile, clientInfo: ClientInfo, args: Mi
   const session = new Session(entry);
   const result = await session.run(clientInfo, args, { raw });
   console.log(result.text);
+  if (result.isError)
+    process.exitCode = 1;
 }
 
 async function runInitWorkspace(args: MinimistArgs) {
