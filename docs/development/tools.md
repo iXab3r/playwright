@@ -275,8 +275,8 @@ To add a new category:
 
 ### Step 3: Update SKILL File
 
-Update `packages/playwright/src/skill/SKILL.md` with the new command documentation.
-Add reference docs in `packages/playwright/src/skill/references/` if the feature is complex.
+Update `packages/playwright-core/src/tools/cli-client/skill/SKILL.md` with the new command documentation.
+Add reference docs in `packages/playwright-core/src/tools/cli-client/skill/references/` if the feature is complex.
 
 Run `npm run playwright-cli -- --help` to verify the help output includes your new command.
 
@@ -398,9 +398,9 @@ If the option is nested, update `mergeConfig()` in `config.ts` to deep-merge it.
 
 ## SKILL File
 
-The skill file is located at `packages/playwright/src/skill/SKILL.md`. It contains documentation for all available CLI commands and MCP tools. Update it whenever you add new commands or tools.
+The skill file is located at `packages/playwright-core/src/tools/cli-client/skill/SKILL.md`. It contains documentation for all available CLI commands and MCP tools. Update it whenever you add new commands or tools.
 
-Reference docs live in `packages/playwright/src/skill/references/`:
+Reference docs live in `packages/playwright-core/src/tools/cli-client/skill/references/`:
 - `request-mocking.md` — network mocking patterns
 - `running-code.md` — code execution
 - `session-management.md` — session handling
@@ -483,7 +483,7 @@ packages/playwright-core/src/tools/
 │       └── http.ts           # HTTP utilities
 └── exports.ts                # Public exports
 
-packages/playwright/src/
+packages/playwright-core/src/tools/cli-client/
 └── skill/
     ├── SKILL.md              # Skill documentation
     └── references/           # Reference docs
