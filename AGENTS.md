@@ -1,3 +1,9 @@
+# Playwright fork — shared agent guide
+
+This checkout is the `iXab3r/playwright` fork. `AGENTS.md` and the Markdown guides under
+`docs/development/` are the common instructions for every harness. Read the guide for the changed
+surface; preserve upstream runtime/API contracts and generated-source ownership.
+
 ### Monorepo Packages
 
 | Package | npm name | Purpose |
@@ -44,7 +50,9 @@ npm run build       # Full build
 npm run watch       # Watch mode (recommended during development)
 ```
 
-Assume watch is running and code is up to date. Generated files (types, channels, validators) are produced by watch automatically.
+Verify whether a watch/build process is running and whether its output covers the current source. A fresh
+clone has no assumed watcher or generated artifacts. Build before runtime verification when needed;
+watch can regenerate types, channels and validators while developing. Do not hand-edit generated output.
 
 ## Lint and type check
 
@@ -54,18 +62,24 @@ npm run flint
 
 Runs all lint checks in parallel: eslint, tsc, doclint, check-deps, generate_channels, generate_types, lint-tests, test-types, lint-packages, code-snippet linting.
 
-**Always run `flint` before committing.** Do not use `tsc --noEmit` or individual lint commands separately.
+For code, API-reference or generation changes, run `flint` before committing; it is the repository
+verification entry point rather than an ad hoc set of compiler commands. Agent-guide-only prose uses
+link, command/config consistency and `git diff --check` inspection. This does not waive required CI.
 
 ## Test Commands
 
 | Command | Scope |
 |---------|-------|
 | `npm run ctest <filter>` | Chromium only library tests — **use during development** |
-| `npm run test <filter> -- --project=<chromium,firefix,webkit>` | All library / per project |
+| `npm run test -- <filter> --project=chromium-library` | One library project; omit `--project` for the full matrix |
 | `npm run ttest <filter>` | Test runner (`tests/playwright-test/`) |
-| `npm run ctest-mcp <filter>` | Chromium only MCP tools (`tests/mcp/`) |
-| `npm run test-mcp <filter> -- --project=<chromium,firefox,webkit>` | MCP tools (`tests/mcp/`) |
+| `npm run ctest-mcp <filter>` | Chrome-channel MCP tools (`tests/mcp/`) |
+| `npm run test-mcp -- <filter> --project=chromium` | MCP tools (`tests/mcp/`) |
 
+
+Library projects use names such as `chromium-library`, `chromium-page`, `firefox-library` and
+`webkit-page`; `ctest` selects `chromium-*`. MCP projects use `chrome`, `chromium`, `firefox` and
+`webkit` (plus `msedge` on Windows). Consult the owning config before selecting a project.
 
 ### Filtering
 
@@ -105,44 +119,30 @@ Non-exported classes have no naming convention; they are internal implementation
 
 ## Commit Convention
 
-Before committing, run `npm run flint` and fix errors.
+Use semantic commit messages: `label(scope): description`, with labels such as `fix`, `feat`,
+`chore`, `docs`, `test` and `devops`. Run the applicable checks above and fix their failures.
 
-Semantic commit messages: `label(scope): description`
+Resolve the actual remote and intended base before publication. Fork maintenance targets
+`iXab3r/playwright`; upstream `microsoft/playwright` is a separate destination requiring an explicit
+request. New branches default to `bugfix/<short-description>`; preserve an explicitly requested name.
 
-Labels: `fix`, `feat`, `chore`, `docs`, `test`, `devops`
+Create PRs with an explicit repository and base, for example `gh pr create --repo iXab3r/playwright
+--base main --head bugfix/shared-agent-rules`. Keep the description short: problem, resulting behavior,
+actual verification and material limitations. Use a UTF-8 `--body-file` for multiline text. Never
+force-push or bypass required checks; verify the reviewed head and final merge. Do not add agent
+co-author trailers or generated-by banners.
 
-```bash
-git checkout -b fix-39562
-# ... make changes ...
-git add <changed-files>
-git commit -m "$(cat <<'EOF'
-fix(proxy): handle SOCKS proxy authentication
+## Independent architecture and diff review
 
-Fixes: https://github.com/microsoft/playwright/issues/39562
-EOF
-)"
-git push origin fix-39562
-gh pr create --repo microsoft/playwright --head username:fix-39562 \
-  --title "fix(proxy): handle SOCKS proxy authentication" \
-  --body "$(cat <<'EOF'
-## Summary
-- <describe the change very! briefly>
-
-Fixes https://github.com/microsoft/playwright/issues/39562
-EOF
-)"
-```
-
-Never add Co-Authored-By agents in commit message.
-Never add "Generated with" in commit message.
-Never add test plan to PR description. Keep PR description short — a few bullet points at most.
-Branch naming for issue fixes: `fix-<issue-number>`
+Use [the shared review guide](docs/development/review.md) when independent review is needed.
+Architects and reviewers start with empty conversation context and one focused neutral question,
+then inspect source and tests to form their own assessment. The delivery owner makes fixes and merges.
 
 ## Development Guides
 
 Detailed guides for common development tasks:
 
-- **[Architecture: Client, Server, and Dispatchers](.claude/skills/playwright-dev/library.md)** — package layout, protocol layer, ChannelOwner/SdkObject/Dispatcher base classes, DEPS rules, end-to-end RPC flow, object lifecycle
-- **[Adding and Modifying APIs](.claude/skills/playwright-dev/api.md)** — 6-step process: define docs → implement client → define protocol → implement dispatcher → implement server → write tests
-- **[MCP Tools and CLI Commands](.claude/skills/playwright-dev/tools.md)** — `defineTool()`/`defineTabTool()`, tool capabilities, CLI `declareCommand()`, config options, testing with MCP fixtures
-- **[Vendoring Dependencies](.claude/skills/playwright-dev/vendor.md)** — bundle architecture, esbuild setup, typed wrappers, adding deps to existing bundles
+- **[Architecture: Client, Server, and Dispatchers](docs/development/library.md)** — package layout, protocol layer, ChannelOwner/SdkObject/Dispatcher base classes, DEPS rules, end-to-end RPC flow, object lifecycle
+- **[Adding and Modifying APIs](docs/development/api.md)** — 6-step process: define docs → implement client → define protocol → implement dispatcher → implement server → write tests
+- **[MCP Tools and CLI Commands](docs/development/tools.md)** — `defineTool()`/`defineTabTool()`, tool capabilities, CLI `declareCommand()`, config options, testing with MCP fixtures
+- **[Vendoring Dependencies](docs/development/vendor.md)** — bundle architecture, esbuild setup, typed wrappers, adding deps to existing bundles
